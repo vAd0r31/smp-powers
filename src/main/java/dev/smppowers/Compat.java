@@ -56,7 +56,7 @@ final class Compat {
     }
 
     static void actionBar(ServerPlayer p, Component c) {
-        p.displayClientMessage(c, true);
+        p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetActionBarTextPacket(c));
     }
 
     static void msg(ServerPlayer p, Component c) {
@@ -65,6 +65,21 @@ final class Compat {
 
     static void particles(ServerLevel l, ParticleOptions type, Vec3 pos, int count, double spread) {
         l.sendParticles(type, pos.x, pos.y, pos.z, count, spread, spread / 2.0, spread, 0.02);
+    }
+
+    /** Finds the lightning bolt entity type by name so a rename can't break the build. */
+    @SuppressWarnings("rawtypes")
+    static net.minecraft.world.entity.EntityType lightningType() {
+        try {
+            for (java.lang.reflect.Field f : net.minecraft.world.entity.EntityType.class.getFields()) {
+                if (java.lang.reflect.Modifier.isStatic(f.getModifiers()) && f.getName().contains("LIGHTNING")) {
+                    return (net.minecraft.world.entity.EntityType) f.get(null);
+                }
+            }
+        } catch (Exception ignored) {
+            // fall through
+        }
+        return null;
     }
 
     static boolean isEnd(Level l) {
